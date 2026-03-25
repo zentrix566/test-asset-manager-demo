@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>资产管理系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f5f5f5;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            text-align: center;
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+
+        .toolbar {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .toolbar input, .toolbar select {
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            min-width: 150px;
+        }
+
+        .toolbar button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+        }
+
+        .btn-danger {
+            background: #f56565;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #e53e3e;
+        }
+
+        .btn-success {
+            background: #48bb78;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #38a169;
+        }
+
+        .stats-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: #f8f9fa;
+        }
+
+        th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        .type-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-available {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .status-in_use {
+            background: #bee3f8;
+            color: #2c5282;
+        }
+
+        .status-maintenance {
+            background: #feebc8;
+            color: #7c2d12;
+        }
+
+        .status-retired {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+
+        .action-buttons button {
+            padding: 6px 12px;
+            margin-right: 5px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h2 {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .form-actions {
+            margin-top: 20px;
+            text-align: right;
+            gap: 10px;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .value-cell {
+            font-weight: 600;
+            color: #2d3748;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>资产管理系统</h1>
+    </div>
+
+    <div class="container">
+        <div class="toolbar">
+            <input type="text" id="searchInput" placeholder="搜索资产名称...">
+            <select id="typeFilter">
+                <option value="">全部类型</option>
+                <option value="ELECTRONICS">电子设备</option>
+                <option value="FURNITURE">家具</option>
+                <option value="VEHICLE">交通工具</option>
+                <option value="EQUIPMENT">设备</option>
+                <option value="OTHER">其他</option>
+            </select>
+            <select id="statusFilter">
+                <option value="">全部状态</option>
+                <option value="AVAILABLE">可用</option>
+                <option value="IN_USE">使用中</option>
+                <option value="MAINTENANCE">维护中</option>
+                <option value="RETIRED">已报废</option>
+            </select>
+            <button class="btn-primary" onclick="searchAssets()">搜索</button>
+            <button class="btn-success" onclick="openAddModal()">添加资产</button>
+            <button class="btn-primary" onclick="loadAssets()">重置</button>
+        </div>
+
+        <div class="stats-card">
+            <div class="stats-grid" id="statsGrid">
+                <!-- Stats will be loaded here -->
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>名称</th>
+                        <th>类型</th>
+                        <th>价值</th>
+                        <th>采购日期</th>
+                        <th>位置</th>
+                        <th>状态</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="assetTableBody">
+                    <!-- Assets will be loaded here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Add/Edit Modal -->
+    <div id="assetModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">添加资产</h2>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <form id="assetForm">
+                <input type="hidden" id="formId">
+                <div class="form-group">
+                    <label>资产ID</label>
+                    <input type="text" id="inputId" required placeholder="例如: A011">
+                </div>
+                <div class="form-group">
+                    <label>资产名称</label>
+                    <input type="text" id="inputName" required placeholder="输入资产名称">
+                </div>
+                <div class="form-group">
+                    <label>资产类型</label>
+                    <select id="inputType" required>
+                        <option value="ELECTRONICS">电子设备</option>
+                        <option value="FURNITURE">家具</option>
+                        <option value="VEHICLE">交通工具</option>
+                        <option value="EQUIPMENT">设备</option>
+                        <option value="OTHER">其他</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>资产价值 (¥)</label>
+                    <input type="number" step="0.01" id="inputValue" required placeholder="输入资产价值">
+                </div>
+                <div class="form-group">
+                    <label>存放位置</label>
+                    <input type="text" id="inputLocation" required placeholder="输入存放位置">
+                </div>
+                <div class="form-group">
+                    <label>资产状态</label>
+                    <select id="inputStatus" required>
+                        <option value="AVAILABLE">可用</option>
+                        <option value="IN_USE">使用中</option>
+                        <option value="MAINTENANCE">维护中</option>
+                        <option value="RETIRED">已报废</option>
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="button" onclick="closeModal()" class="btn-danger">取消</button>
+                    <button type="submit" class="btn-success">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const apiBase = '/api/assets';
+
+        // 状态映射
+        const statusMap = {
+            'AVAILABLE': { text: '可用', className: 'status-available' },
+            'IN_USE': { text: '使用中', className: 'status-in_use' },
+            'MAINTENANCE': { text: '维护中', className: 'status-maintenance' },
+            'RETIRED': { text: '已报废', className: 'status-retired' }
+        };
+
+        // 类型映射
+        const typeMap = {
+            'ELECTRONICS': '电子设备',
+            'FURNITURE': '家具',
+            'VEHICLE': '交通工具',
+            'EQUIPMENT': '设备',
+            'OTHER': '其他'
+        };
+
+        // 页面加载时获取数据
+        document.addEventListener('DOMContentLoaded', () => {
+            loadAssets();
+            loadStatistics();
+        });
+
+        // 加载所有资产
+        async function loadAssets() {
+            try {
+                const response = await fetch(apiBase);
+                const assets = await response.json();
+                renderAssets(assets);
+            } catch (error) {
+                console.error('加载资产失败:', error);
+                alert('加载资产失败');
+            }
+        }
+
+        // 加载统计信息
+        async function loadStatistics() {
+            try {
+                const response = await fetch(apiBase + '/statistics');
+                const stats = await response.json();
+                renderStats(stats);
+            } catch (error) {
+                console.error('加载统计失败:', error);
+            }
+        }
+
+        // 搜索资产
+        async function searchAssets() {
+            const keyword = document.getElementById('searchInput').value.trim();
+            const type = document.getElementById('typeFilter').value;
+            const status = document.getElementById('statusFilter').value;
+
+            let url = apiBase;
+            let assets;
+
+            try {
+                if (keyword) {
+                    const response = await fetch(`${apiBase}/search?keyword=${encodeURIComponent(keyword)}`);
+                    assets = await response.json();
+                } else if (type) {
+                    const response = await fetch(`${apiBase}/type/${type}`);
+                    assets = await response.json();
+                } else if (status) {
+                    const response = await fetch(`${apiBase}/status/${status}`);
+                    assets = await response.json();
+                } else {
+                    const response = await fetch(apiBase);
+                    assets = await response.json();
+                }
+                renderAssets(assets);
+            } catch (error) {
+                console.error('搜索失败:', error);
+                alert('搜索失败');
+            }
+        }
+
+        // 渲染资产表格
+        function renderAssets(assets) {
+            const tbody = document.getElementById('assetTableBody');
+            if (assets.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" class="empty-state">暂无资产数据</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = assets.map(asset => `
+                <tr>
+                    <td>${asset.id}</td>
+                    <td>${asset.name}</td>
+                    <td>${typeMap[asset.type]}</td>
+                    <td class="value-cell">¥${Number(asset.value).toFixed(2)}</td>
+                    <td>${asset.purchaseDate || '-'}</td>
+                    <td>${asset.location}</td>
+                    <td>
+                        <span class="type-badge ${statusMap[asset.status].className}">
+                            ${statusMap[asset.status].text}
+                        </span>
+                    </td>
+                    <td class="action-buttons">
+                        <button class="btn-primary" onclick="deleteAsset('${asset.id}')">删除</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // 渲染统计信息
+        function renderStats(stats) {
+            const grid = document.getElementById('statsGrid');
+            grid.innerHTML = `
+                <div class="stat-item">
+                    <div class="stat-value">${stats.totalCount}</div>
+                    <div class="stat-label">资产总数</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">¥${Number(stats.totalValue).toFixed(2)}</div>
+                    <div class="stat-label">总价值</div>
+                </div>
+            `;
+        }
+
+        // 打开添加模态框
+        function openAddModal() {
+            document.getElementById('modalTitle').textContent = '添加资产';
+            document.getElementById('assetForm').reset();
+            document.getElementById('inputId').disabled = false;
+            document.getElementById('assetModal').classList.add('show');
+        }
+
+        // 关闭模态框
+        function closeModal() {
+            document.getElementById('assetModal').classList.remove('show');
+        }
+
+        // 提交表单
+        document.getElementById('assetForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const asset = {
+                id: document.getElementById('inputId').value.trim(),
+                name: document.getElementById('inputName').value.trim(),
+                type: document.getElementById('inputType').value,
+                value: parseFloat(document.getElementById('inputValue').value),
+                purchaseDate: new Date().toISOString().split('T')[0],
+                location: document.getElementById('inputLocation').value.trim(),
+                status: document.getElementById('inputStatus').value
+            };
+
+            try {
+                const response = await fetch(apiBase, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(asset)
+                });
+
+                if (response.ok) {
+                    closeModal();
+                    loadAssets();
+                    loadStatistics();
+                    alert('添加成功！');
+                } else {
+                    const text = await response.text();
+                    alert('添加失败: ' + text);
+                }
+            } catch (error) {
+                console.error('保存失败:', error);
+                alert('保存失败');
+            }
+        });
+
+        // 删除资产
+        async function deleteAsset(id) {
+            if (!confirm('确认要删除这个资产吗？')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(apiBase + '/' + id, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    loadAssets();
+                    loadStatistics();
+                    alert('删除成功！');
+                } else {
+                    alert('删除失败');
+                }
+            } catch (error) {
+                console.error('删除失败:', error);
+                alert('删除失败');
+            }
+        }
+
+        // 点击模态框外部关闭
+        document.getElementById('assetModal').addEventListener('click', (e) => {
+            if (e.target.id === 'assetModal') {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>
